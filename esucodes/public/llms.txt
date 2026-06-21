@@ -1,0 +1,30 @@
+# ESUcodes
+
+> Yazılım öğrencilerinin kurduğu Türkçe açık bilgi ve proje platformu.
+> Siber güvenlik, yapay zeka, frontend geliştirme ve gömülü sistemler konularında blog yazıları, topluluk projeleri ve ekip bilgisi.
+
+## Hakkında
+
+ESUcodes, yazılım öğrencilerinden oluşan küçük ama aktif bir topluluk platformudur.
+Misyonumuz: Türkçe kaliteli teknik içerik üretmek ve öğrencileri gerçek projelerle deneyim kazanmaya teşvik etmek.
+
+**Dil:** Türkçe
+**Konu alanları:** Siber Güvenlik, Yapay Zeka, Frontend, Gömülü Sistemler, Araştırma
+
+## Sayfalar
+
+- [Anasayfa](/) — Platform tanıtımı, son blog yazıları ve projeler
+- [Blog](/blog) — Teknik blog yazıları (kategori bazlı filtreleme desteklenir)
+- [Projeler](/projeler) — Topluluk tarafından geliştirilen yazılım projeleri
+- [Ekip](/murettebat) — Topluluğu oluşturan yazılım geliştirici profilleri
+- [Katıl](/katil) — Topluluğa üyelik başvurusu
+- [Hakkımızda](/hakkimizda) — ESUcodes'un kuruluş hikayesi ve değerleri
+
+## İçerik Politikası
+
+Tüm blog içerikleri topluluğun editör ve admin üyeleri tarafından yazılmaktadır.
+İçerik Türkçe'dir ve teknik doğruluğa önem verilmektedir.
+
+## Teknik Yığın
+
+Next.js 14 · Supabase · TypeScript · Tailwind CSS
