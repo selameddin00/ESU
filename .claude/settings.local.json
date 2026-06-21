@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd \"C:\\\\Users\\\\egeme\\\\Desktop\" && ls *.zip)",
+      "Bash(Expand-Archive -Path \"C:\\\\Users\\\\egeme\\\\Desktop\\\\ESUCODES Handoff.zip\" -DestinationPath \"C:\\\\Users\\\\egeme\\\\Desktop\\\\ESUCODES_Handoff\" -Force)",
+      "Bash(Expand-Archive -Path \"C:\\\\Users\\\\egeme\\\\Desktop\\\\ESUCODES Design System.zip\" -DestinationPath \"C:\\\\Users\\\\egeme\\\\Desktop\\\\ESUCODES_DesignSystem\" -Force)",
+      "Bash(Write-Host \"Done\")",
+      "Bash(find /mnt/c/Users/egeme/Desktop/ESUCODES_Handoff -type f | head -80)",
+      "Bash(find /mnt/c/Users/egeme/Desktop/ESUCODES_DesignSystem -type f | head -80)",
+      "PowerShell(Get-ChildItem -Recurse \"C:\\\\Users\\\\egeme\\\\Desktop\\\\ESUCODES_Handoff\" | Select-Object FullName | ForEach-Object { $_.FullName } | head)"
+    ]
+  }
+}
