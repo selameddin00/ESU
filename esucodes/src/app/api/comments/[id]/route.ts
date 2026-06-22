@@ -1,30 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
+import { assertAllowedFields, requireRole, withAuthErrors } from "@/lib/auth";
 
-async function checkAdmin(): Promise<boolean> {
+export const PATCH = withAuthErrors(async (req: NextRequest, { params }: { params: { id: string } }) => {
+  await requireRole("admin");
+  const { is_approved } = assertAllowedFields<{ is_approved: boolean }>(await req.json(), ["is_approved"]);
+
+  // RLS "Admin yorum yönetebilir" (ALL) policy'si gerçek admin oturumuna zaten izin
+  // veriyor — service-role gerekmiyor, RLS burada gerçek bir ikincil savunma sağlıyor.
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return false;
-  if (process.env.ADMIN_EMAIL && user.email === process.env.ADMIN_EMAIL) return true;
-  const { data } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  return (data as { role: string } | null)?.role === "admin";
-}
-
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
-  if (!(await checkAdmin())) return NextResponse.json({ error: "Yetkisiz" }, { status: 403 });
-  const { id } = params;
-  const { is_approved } = await request.json();
-  const admin = await createAdminClient();
-  const { error } = await admin.from("comments").update({ is_approved }).eq("id", id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  const { error } = await supabase.from("comments").update({ is_approved }).eq("id", params.id);
+  if (error) {
+    console.error("comments PATCH error:", error);
+    return NextResponse.json({ error: "Yorum güncellenemedi." }, { status: 400 });
+  }
   return NextResponse.json({ success: true });
-}
+});
 
-export async function DELETE(_: NextRequest, { params }: { params: { id: string } }) {
-  if (!(await checkAdmin())) return NextResponse.json({ error: "Yetkisiz" }, { status: 403 });
-  const { id } = params;
-  const admin = await createAdminClient();
-  const { error } = await admin.from("comments").delete().eq("id", id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+export const DELETE = withAuthErrors(async (_req: NextRequest, { params }: { params: { id: string } }) => {
+  await requireRole("admin");
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("comments").delete().eq("id", params.id);
+  if (error) {
+    console.error("comments DELETE error:", error);
+    return NextResponse.json({ error: "Yorum silinemedi." }, { status: 400 });
+  }
   return NextResponse.json({ success: true });
-}
+});
