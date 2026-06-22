@@ -97,20 +97,26 @@ function MemberModal({ member, onClose }: { member: TeamMember; onClose: () => v
 }
 
 export default function TeamPage() {
-  const [members, setMembers]   = useState<TeamMember[]>([]);
-  const [loading, setLoading]   = useState(true);
-  const [selected, setSelected] = useState<TeamMember | null>(null);
+  const [members, setMembers]         = useState<TeamMember[]>([]);
+  const [projectCount, setProjectCount] = useState(0);
+  const [loading, setLoading]         = useState(true);
+  const [selected, setSelected]       = useState<TeamMember | null>(null);
 
   useEffect(() => {
     createClient().from("team_members").select("*").order("order_index")
       .then(({ data }) => { setMembers((data as TeamMember[]) ?? []); setLoading(false); });
   }, []);
 
+  useEffect(() => {
+    createClient().from("projects").select("id", { count: "exact", head: true })
+      .then(({ count }) => setProjectCount(count ?? 0));
+  }, []);
+
   const stats = [
-    { value: members.length, label: "Kurucu Üye",  icon: Users },
-    { value: "4+",           label: "Aktif Proje", icon: FolderOpen },
-    { value: "2023",         label: "Kuruluş",     icon: CalendarDays },
-    { value: "∞",            label: "Merak",        icon: Sparkles },
+    { value: members.length,     label: "Kurucu Üye",  icon: Users },
+    { value: projectCount + "+", label: "Aktif Proje", icon: FolderOpen },
+    { value: "2023",             label: "Kuruluş",     icon: CalendarDays },
+    { value: "∞",                label: "Merak",        icon: Sparkles },
   ];
 
   return (

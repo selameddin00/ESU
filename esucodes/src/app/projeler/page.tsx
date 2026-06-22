@@ -80,7 +80,7 @@ export default function ProjectsPage() {
   const stats = [
     { value: projects.length + "+", label: "Proje",      icon: FolderOpen },
     { value: "3",                    label: "Kurucu Üye", icon: Users },
-    { value: "2025",                 label: "Kuruluş",    icon: CalendarDays },
+    { value: "2023",                 label: "Kuruluş",    icon: CalendarDays },
     { value: "∞",                   label: "Merak",        icon: Sparkles },
   ];
 
