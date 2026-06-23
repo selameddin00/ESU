@@ -1,16 +1,9 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getSessionRole } from "@/lib/auth";
 
 export async function GET() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ isAdmin: false, role: null });
+  const session = await getSessionRole();
+  if (!session) return NextResponse.json({ isAdmin: false, role: null });
 
-  if (process.env.ADMIN_EMAIL && user.email === process.env.ADMIN_EMAIL) {
-    return NextResponse.json({ isAdmin: true, role: "admin" });
-  }
-
-  const { data } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  const role = (data as { role: string } | null)?.role ?? "member";
-  return NextResponse.json({ isAdmin: ["admin", "editor"].includes(role), role });
+  return NextResponse.json({ isAdmin: ["admin", "editor"].includes(session.role), role: session.role });
 }

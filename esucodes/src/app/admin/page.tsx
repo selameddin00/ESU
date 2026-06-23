@@ -120,11 +120,12 @@ function TeamMemberEditor({ member, onClose, onSave }: { member?: TeamMember; on
   const handleSave = async () => {
     setSaving(true);
     const payload = { ...form, skills: form.skills.split(",").map((s) => s.trim()).filter(Boolean), order_index: Number(form.order_index) };
-    const supabase = createClient();
-    const { error } = member
-      ? await supabase.from("team_members").update(payload as Record<string,unknown>).eq("id", member.id)
-      : await supabase.from("team_members").insert(payload as Record<string,unknown>);
-    if (!error) { onSave(); onClose(); }
+    const res = await fetch(member ? `/api/team-members/${member.id}` : "/api/team-members", {
+      method: member ? "PATCH" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (res.ok) { onSave(); onClose(); }
     setSaving(false);
   };
 
@@ -172,11 +173,12 @@ function ProjectEditor({ project, onClose, onSave }: { project?: Project; onClos
   const handleSave = async () => {
     setSaving(true);
     const payload = { ...form, tech: form.tech.split(",").map((s) => s.trim()).filter(Boolean), order_index: Number(form.order_index) };
-    const supabase = createClient();
-    const { error } = project
-      ? await supabase.from("projects").update(payload as Record<string,unknown>).eq("id", project.id)
-      : await supabase.from("projects").insert(payload as Record<string,unknown>);
-    if (!error) { onSave(); onClose(); }
+    const res = await fetch(project ? `/api/projects/${project.id}` : "/api/projects", {
+      method: project ? "PATCH" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (res.ok) { onSave(); onClose(); }
     setSaving(false);
   };
 
@@ -349,8 +351,9 @@ function TeamTab() {
 
   const fetchMembers = useCallback(async () => {
     setLoading(true);
-    const { data } = await createClient().from("team_members").select("*").order("order_index");
-    setMembers((data as TeamMember[]) ?? []);
+    const res = await fetch("/api/team-members");
+    const data = res.ok ? await res.json() : [];
+    setMembers(Array.isArray(data) ? data : []);
     setLoading(false);
   }, []);
 
@@ -358,7 +361,7 @@ function TeamTab() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Bu üyeyi silmek istediğinden emin misin?")) return;
-    await createClient().from("team_members").delete().eq("id", id);
+    await fetch(`/api/team-members/${id}`, { method: "DELETE" });
     fetchMembers();
   };
 
@@ -404,8 +407,9 @@ function ProjectsTab() {
 
   const fetchProjects = useCallback(async () => {
     setLoading(true);
-    const { data } = await createClient().from("projects").select("*").order("order_index");
-    setProjects((data as Project[]) ?? []);
+    const res = await fetch("/api/projects");
+    const data = res.ok ? await res.json() : [];
+    setProjects(Array.isArray(data) ? data : []);
     setLoading(false);
   }, []);
 
@@ -413,7 +417,7 @@ function ProjectsTab() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Bu projeyi silmek istediğinden emin misin?")) return;
-    await createClient().from("projects").delete().eq("id", id);
+    await fetch(`/api/projects/${id}`, { method: "DELETE" });
     fetchProjects();
   };
 
@@ -464,20 +468,33 @@ function ProjectsTab() {
 function UsersTab() {
   const [users, setUsers]     = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError]     = useState<string | null>(null);
 
   useEffect(() => {
-    createClient().from("profiles").select("id, role, full_name, username").order("created_at", { ascending: false })
-      .then(({ data }) => { setUsers((data as Profile[]) ?? []); setLoading(false); });
+    fetch("/api/admin/users")
+      .then((r) => r.json())
+      .then((data) => { setUsers(Array.isArray(data) ? data : []); setLoading(false); });
   }, []);
 
   const changeRole = async (id: string, role: Role) => {
-    await createClient().from("profiles").update({ role } as Record<string,unknown>).eq("id", id);
+    setError(null);
+    const res = await fetch(`/api/admin/users/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role }),
+    });
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      setError(d.error ?? "Rol güncellenemedi.");
+      return;
+    }
     setUsers((u) => u.map((x) => x.id === id ? { ...x, role } : x));
   };
 
   return (
     <div>
       <h2 style={{ fontSize: 22, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 24px" }}>Kullanıcılar</h2>
+      {error && <p style={{ fontSize: 13, color: "#f87171", margin: "0 0 16px" }}>{error}</p>}
       {loading ? <div style={{ textAlign: "center", padding: 60, color: "var(--text-muted)" }}>Yükleniyor...</div> : (
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           {users.map((u) => (
@@ -511,11 +528,9 @@ function CommentsTab({ onPendingChange }: { onPendingChange: (n: number) => void
 
   const fetchComments = useCallback(async () => {
     setLoading(true);
-    const { data } = await createClient()
-      .from("comments")
-      .select("id, author_name, author_email, content, created_at, is_approved, post_id")
-      .order("created_at", { ascending: false });
-    const list = (data as Comment[]) ?? [];
+    const res = await fetch("/api/admin/comments");
+    const data = res.ok ? await res.json() : [];
+    const list = Array.isArray(data) ? (data as Comment[]) : [];
     setComments(list);
     onPendingChange(list.filter((c) => !c.is_approved).length);
     setLoading(false);

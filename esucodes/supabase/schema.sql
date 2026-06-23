@@ -1,6 +1,9 @@
 -- =====================================================
 -- ESUcodes Supabase Schema
--- Supabase Dashboard → SQL Editor'de çalıştır
+-- Bu dosya, prod DB'ye 2026-06-21'de canlı bağlanılarak (information_schema +
+-- pg_policies + pg_proc + pg_views üzerinden) doğrulanmış GERÇEK şemayı yansıtır.
+-- Daha önceki sürüm stale'di: comments'in author_name/author_email/is_approved
+-- kolonları, team_members/projects tabloları ve birkaç RLS policy'si hiç yoktu.
 -- =====================================================
 
 -- Profiles (auth.users'ı extend eder)
@@ -58,13 +61,48 @@ create trigger posts_updated_at
   before update on public.posts
   for each row execute procedure public.update_updated_at();
 
--- Comments
+-- Comments — anonim model: giriş gerekmez, isim/email formla alınır, moderasyon
+-- is_approved ile yapılır. author_id kolonu duruyor ama nullable ve şu an kullanılmıyor.
 create table public.comments (
-  id         uuid default gen_random_uuid() primary key,
-  post_id    uuid references public.posts(id) on delete cascade not null,
-  author_id  uuid references public.profiles(id) on delete cascade not null,
-  content    text not null,
-  created_at timestamptz default now()
+  id            uuid default gen_random_uuid() primary key,
+  post_id       uuid references public.posts(id) on delete cascade not null,
+  author_id     uuid references public.profiles(id) on delete cascade,
+  content       text not null,
+  created_at    timestamptz default now(),
+  author_name   text,
+  author_email  text,
+  is_approved   boolean default false
+);
+
+-- Team members (admin panelinden yönetiliyor, herkese açık okunuyor)
+create table public.team_members (
+  id           uuid default gen_random_uuid() primary key,
+  name         text not null,
+  role_title   text not null,
+  bio          text,
+  skills       text[] default '{}',
+  github_url   text,
+  linkedin_url text,
+  order_index  integer default 0,
+  created_at   timestamptz default now(),
+  updated_at   timestamptz default now()
+);
+
+-- Projects (admin panelinden yönetiliyor, herkese açık okunuyor)
+create table public.projects (
+  id           uuid default gen_random_uuid() primary key,
+  name         text not null,
+  tagline      text,
+  description  text,
+  tech         text[] default '{}',
+  status       text default 'development',
+  github_url   text,
+  live_url     text,
+  icon         text default 'Globe',
+  accent_color text default '#818cf8',
+  order_index  integer default 0,
+  created_at   timestamptz default now(),
+  updated_at   timestamptz default now()
 );
 
 -- Subscriptions
@@ -81,9 +119,11 @@ create table public.subscriptions (
 -- RLS (Row Level Security)
 -- =====================================================
 
-alter table public.profiles     enable row level security;
-alter table public.posts        enable row level security;
-alter table public.comments     enable row level security;
+alter table public.profiles      enable row level security;
+alter table public.posts         enable row level security;
+alter table public.comments      enable row level security;
+alter table public.team_members  enable row level security;
+alter table public.projects      enable row level security;
 alter table public.subscriptions enable row level security;
 
 -- PROFILES
@@ -92,6 +132,10 @@ create policy "Herkes profil okuyabilir"
 
 create policy "Kullanıcı kendi profilini güncelleyebilir"
   on profiles for update using (auth.uid() = id);
+
+-- NOT: Admin'in BAŞKA bir kullanıcının role'ünü güncelleyebileceği bir RLS policy'si
+-- yok. /api/admin/users/[id] bu yüzden bilinçli olarak service-role client kullanıyor
+-- (app-layer requireRole('admin') + self-demotion guard'ından SONRA, sadece o satır için).
 
 -- POSTS — okuma
 create policy "Yayınlanmış postlar herkese açık"
@@ -133,19 +177,45 @@ create policy "Sadece admin silebilir"
   );
 
 -- COMMENTS
-create policy "Yorumlar herkese açık"
-  on comments for select using (true);
+create policy "Onaylı yorumlar herkese açık"
+  on comments for select using (is_approved = true);
 
-create policy "Giriş yapmış kullanıcı yorum yapabilir"
-  on comments for insert with check (auth.uid() is not null and author_id = auth.uid());
+create policy "Admin tüm yorumları görebilir"
+  on comments for select using (
+    exists (select 1 from profiles where id = auth.uid() and role = 'admin')
+  );
 
-create policy "Kullanıcı kendi yorumunu silebilir"
-  on comments for delete using (
-    author_id = auth.uid()
-    or exists (
-      select 1 from profiles
-      where id = auth.uid() and role = 'admin'
-    )
+create policy "Herkes yorum yapabilir"
+  on comments for insert with check (true);
+  -- BİLİNEN AÇIK: with_check kısıtlamasız olduğu için anon key ile PostgREST'e
+  -- doğrudan istek atan biri is_approved=true gönderip moderasyonu atlayabilir.
+  -- Uygulama her zaman is_approved:false ile insert ediyor ama RLS bunu ZORLAMIYOR.
+  -- Önerilen düzeltme (henüz UYGULANMADI, onay bekliyor):
+  --   drop policy "Herkes yorum yapabilir" on comments;
+  --   create policy "Herkes yorum yapabilir"
+  --     on comments for insert with check (is_approved = false);
+
+create policy "Admin yorum yönetebilir"
+  on comments for all using (
+    exists (select 1 from profiles where id = auth.uid() and role = 'admin')
+  );
+
+-- TEAM_MEMBERS
+create policy "Ekip herkes okuyabilir"
+  on team_members for select using (true);
+
+create policy "Sadece admin ekip yönetebilir"
+  on team_members for all using (
+    exists (select 1 from profiles where id = auth.uid() and role = 'admin')
+  );
+
+-- PROJECTS
+create policy "Projeler herkes okuyabilir"
+  on projects for select using (true);
+
+create policy "Sadece admin proje yönetebilir"
+  on projects for all using (
+    exists (select 1 from profiles where id = auth.uid() and role = 'admin')
   );
 
 -- SUBSCRIPTIONS
@@ -162,5 +232,4 @@ select
   (select count(*) from posts where status = 'published') as published_posts,
   (select count(*) from posts where status = 'draft')     as draft_posts,
   (select count(*) from profiles)                          as total_users,
-  (select count(*) from comments)                          as total_comments,
-  (select count(*) from subscriptions)                     as total_subscribers;
+  (select count(*) from comments)                          as total_comments;
