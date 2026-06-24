@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { assertAllowedFields, requireOwnerOrRole, requireRole, withAuthErrors } from "@/lib/auth";
-import DOMPurify from "isomorphic-dompurify";
+import sanitizeHtml from "sanitize-html";
 
 const ALLOWED_TAGS = ["h2","h3","h4","p","ul","ol","li","blockquote","pre","code","strong","em","a","img","hr","br","span"];
-const sanitize = (html: string) => DOMPurify.sanitize(html, { ALLOWED_TAGS, ALLOWED_ATTR: ["href","src","alt","class","target","rel"] });
+const sanitize = (html: string) => sanitizeHtml(html, { allowedTags: ALLOWED_TAGS, allowedAttributes: { "*": ["href","src","alt","class","target","rel"] } });
 
 const PATCHABLE_FIELDS = ["title", "slug", "excerpt", "content", "category", "status", "read_time", "cover_image"] as const;
 
