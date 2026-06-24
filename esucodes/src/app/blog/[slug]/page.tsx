@@ -14,6 +14,12 @@ type DbPost = {
   profiles?: { full_name: string | null; username: string | null } | null;
 };
 
+type PostMeta = {
+  title: string; excerpt: string | null; cover_image: string | null;
+  category: string; published_at: string | null;
+  profiles: { full_name: string | null } | null;
+};
+
 export async function generateMetadata(
   { params }: { params: { slug: string } }
 ): Promise<Metadata> {
@@ -27,8 +33,8 @@ export async function generateMetadata(
 
   if (!post) return { title: "Yazı Bulunamadı" };
 
-  const p = post as DbPost;
-  const author = (p.profiles as { full_name: string | null } | null)?.full_name ?? "ESUcodes";
+  const p = post as unknown as PostMeta;
+  const author = p.profiles?.full_name ?? "ESUcodes";
   const ogImage = p.cover_image ?? `${BASE_URL}/og-image.png`;
 
   return {

@@ -1,13 +1,11 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { UserPlus, Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { GradientHeading } from "@/components/GradientHeading";
 
 export default function RegisterPage() {
-  const router = useRouter();
   const [form, setForm]       = useState({ full_name: "", email: "", password: "", confirm: "" });
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading]   = useState(false);

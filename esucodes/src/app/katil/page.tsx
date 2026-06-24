@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import Link from "next/link";
 import { Monitor, Server, Shield, Cpu, PenLine, FlaskConical, CheckCircle, ChevronLeft, ChevronRight, Send, Sparkles, Rocket, BookOpen, Users, Star } from "lucide-react";
 import { JOIN_ROLES } from "@/lib/data";
 import { GradientHeading } from "@/components/GradientHeading";

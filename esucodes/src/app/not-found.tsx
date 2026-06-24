@@ -33,7 +33,7 @@ export default function NotFound() {
                 TRANSMISSION LOST — MCC HOUSTON
               </div>
               <div style={{ fontSize: 22, fontWeight: 900, color: "var(--text-primary)", lineHeight: 1.2 }}>
-                "Houston, burada bir sorun var."
+                &quot;Houston, burada bir sorun var.&quot;
               </div>
             </div>
           </div>
