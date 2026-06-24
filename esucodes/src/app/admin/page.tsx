@@ -6,11 +6,11 @@ import {
   LayoutDashboard, FileText, Users, FolderOpen, LogOut,
   Plus, Pencil, Trash2, Eye, EyeOff, CheckCircle, Clock,
   ChevronRight, X, Save, Send, UsersRound, Globe, Bot,
-  LayoutDashboard as LDash, Orbit, Shield, MessageSquare, ExternalLink,
+  LayoutDashboard as LDash, Orbit, Shield, MessageSquare, ExternalLink, Inbox, XCircle,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { RichEditor } from "@/components/editor/RichEditor";
-import { CATEGORIES, NAV } from "@/lib/data";
+import { CATEGORIES, NAV, JOIN_ROLES } from "@/lib/data";
 import type { Role } from "@/lib/supabase/types";
 
 type Profile    = { id: string; role: Role; full_name: string | null; username: string | null };
@@ -22,6 +22,7 @@ const NAV_ITEMS = [
   { id: "overview",  label: "Genel Bakış",  icon: LayoutDashboard, adminOnly: false },
   { id: "posts",     label: "Yazılar",      icon: FileText,         adminOnly: false },
   { id: "comments",  label: "Yorumlar",     icon: MessageSquare,    adminOnly: true  },
+  { id: "applications", label: "Başvurular", icon: Inbox,           adminOnly: true  },
   { id: "team",      label: "Ekip",         icon: UsersRound,       adminOnly: true  },
   { id: "projects",  label: "Projeler",     icon: FolderOpen,       adminOnly: true  },
   { id: "users",     label: "Kullanıcılar", icon: Shield,           adminOnly: true  },
@@ -608,6 +609,101 @@ function CommentsTab({ onPendingChange }: { onPendingChange: (n: number) => void
   );
 }
 
+// ── Applications Tab ───────────────────────────────────────────────
+type Application = { id: string; name: string; email: string; github: string | null; roles: string[]; level: string; message: string; status: "yeni" | "incelendi" | "kabul" | "red"; created_at: string };
+
+const APPLICATION_STATUS_LABELS: Record<Application["status"], string> = { yeni: "Yeni", incelendi: "İncelendi", kabul: "Kabul", red: "Red" };
+const APPLICATION_STATUS_COLORS: Record<Application["status"], string> = { yeni: "#fb923c", incelendi: "#818cf8", kabul: "#22d3ee", red: "#f87171" };
+
+function ApplicationsTab({ onPendingChange }: { onPendingChange: (n: number) => void }) {
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [loading, setLoading]   = useState(true);
+  const [filter, setFilter]     = useState<"all" | Application["status"]>("all");
+
+  const fetchApplications = useCallback(async () => {
+    setLoading(true);
+    const res = await fetch("/api/admin/applications");
+    const data = res.ok ? await res.json() : [];
+    const list = Array.isArray(data) ? (data as Application[]) : [];
+    setApplications(list);
+    onPendingChange(list.filter((a) => a.status === "yeni").length);
+    setLoading(false);
+  }, [onPendingChange]);
+
+  useEffect(() => { fetchApplications(); }, [fetchApplications]);
+
+  const handleStatus = async (id: string, status: Application["status"]) => {
+    await fetch(`/api/admin/applications/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
+    fetchApplications();
+  };
+
+  const shown = applications.filter((a) => filter === "all" ? true : a.status === filter);
+
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+        <h2 style={{ fontSize: 22, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>Başvurular</h2>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {(["all", "yeni", "incelendi", "kabul", "red"] as const).map((f) => (
+            <button key={f} onClick={() => setFilter(f)} style={{ padding: "7px 14px", borderRadius: 9999, fontSize: 13, fontWeight: 600, cursor: "pointer", border: "1px solid var(--border-subtle)", background: filter === f ? "var(--accent-primary)" : "var(--glass-fill)", color: filter === f ? "var(--bg-primary)" : "var(--text-secondary)" }}>
+              {f === "all" ? `Tümü (${applications.length})` : `${APPLICATION_STATUS_LABELS[f]} (${applications.filter((a) => a.status === f).length})`}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {loading ? (
+        <div style={{ textAlign: "center", padding: 60, color: "var(--text-muted)" }}>Yükleniyor...</div>
+      ) : shown.length === 0 ? (
+        <div style={{ textAlign: "center", padding: 60, color: "var(--text-muted)" }}>Başvuru yok.</div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {shown.map((a) => (
+            <div key={a.id} style={{ padding: "16px 18px", borderRadius: 14, background: "var(--glass-fill)", border: `1px solid ${a.status === "yeni" ? "rgba(251,146,60,0.3)" : "var(--border-subtle)"}` }}>
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ width: 34, height: 34, borderRadius: 9999, background: "rgba(129,140,248,0.2)", border: "1px solid rgba(129,140,248,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, color: "var(--accent-primary)", flexShrink: 0 }}>
+                    {a.name[0].toUpperCase()}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>{a.name}</div>
+                    <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{a.email} · {new Date(a.created_at).toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric" })}</div>
+                  </div>
+                  <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 9999, background: `${APPLICATION_STATUS_COLORS[a.status]}20`, color: APPLICATION_STATUS_COLORS[a.status] }}>
+                    {APPLICATION_STATUS_LABELS[a.status]}
+                  </span>
+                </div>
+                <div style={{ display: "flex", gap: 6, flexShrink: 0, flexWrap: "wrap" }}>
+                  {a.status !== "incelendi" && (
+                    <button onClick={() => handleStatus(a.id, "incelendi")} title="İncelendi" style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: "1px solid rgba(129,140,248,0.3)", background: "rgba(129,140,248,0.08)", cursor: "pointer", color: "#818cf8", fontSize: 13, fontWeight: 600 }}>
+                      <Eye size={14} /> İncelendi
+                    </button>
+                  )}
+                  {a.status !== "kabul" && (
+                    <button onClick={() => handleStatus(a.id, "kabul")} title="Kabul Et" style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: "1px solid rgba(34,211,238,0.3)", background: "rgba(34,211,238,0.08)", cursor: "pointer", color: "#22d3ee", fontSize: 13, fontWeight: 600 }}>
+                      <CheckCircle size={14} /> Kabul
+                    </button>
+                  )}
+                  {a.status !== "red" && (
+                    <button onClick={() => handleStatus(a.id, "red")} title="Reddet" style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: "1px solid rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.08)", cursor: "pointer", color: "#f87171", fontSize: 13, fontWeight: 600 }}>
+                      <XCircle size={14} /> Red
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div style={{ marginLeft: 44, fontSize: 13, color: "var(--text-secondary)", marginBottom: 8 }}>
+                {a.github && <span style={{ fontFamily: "var(--font-mono)" }}>@{a.github} · </span>}
+                {a.level} · {a.roles.map((id) => JOIN_ROLES.find((r) => r.id === id)?.label ?? id).join(", ")}
+              </div>
+              <p style={{ fontSize: 14, color: "var(--text-secondary)", lineHeight: 1.65, margin: "0 0 0 44px" }}>{a.message}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main ───────────────────────────────────────────────────────────
 export default function AdminPage() {
   const router = useRouter();
@@ -616,6 +712,7 @@ export default function AdminPage() {
   const [stats, setStats]         = useState({ published: 0, draft: 0, users: 0, comments: 0 });
   const [loading, setLoading]     = useState(true);
   const [pendingComments, setPendingComments] = useState(0);
+  const [pendingApplications, setPendingApplications] = useState(0);
 
   useEffect(() => {
     const init = async () => {
@@ -666,13 +763,14 @@ export default function AdminPage() {
         </div>
 
         {visibleNav.map((item) => {
-          const showBadge = item.id === "comments" && pendingComments > 0;
+          const badgeCount = item.id === "comments" ? pendingComments : item.id === "applications" ? pendingApplications : 0;
+          const showBadge = badgeCount > 0;
           return (
             <button key={item.id} onClick={() => setTab(item.id)} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 10, border: "none", cursor: "pointer", background: tab === item.id ? "rgba(129,140,248,0.15)" : "transparent", color: tab === item.id ? "var(--accent-primary)" : "var(--text-secondary)", fontSize: 14, fontWeight: tab === item.id ? 700 : 500, textAlign: "left", width: "100%", transition: "all 0.15s" }}>
               <item.icon size={17} />
               {item.label}
               {showBadge && (
-                <span style={{ marginLeft: 4, minWidth: 18, height: 18, padding: "0 5px", borderRadius: 9999, background: "#fb923c", color: "#0f172a", fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" }}>{pendingComments}</span>
+                <span style={{ marginLeft: 4, minWidth: 18, height: 18, padding: "0 5px", borderRadius: 9999, background: "#fb923c", color: "#0f172a", fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" }}>{badgeCount}</span>
               )}
               {tab === item.id && !showBadge && <ChevronRight size={14} style={{ marginLeft: "auto" }} />}
             </button>
@@ -702,6 +800,7 @@ export default function AdminPage() {
         {tab === "overview"  && <OverviewTab stats={stats} />}
         {tab === "posts"     && <PostsTab role={profile!.role} />}
         {tab === "comments"  && profile?.role === "admin" && <CommentsTab onPendingChange={setPendingComments} />}
+        {tab === "applications" && profile?.role === "admin" && <ApplicationsTab onPendingChange={setPendingApplications} />}
         {tab === "team"      && profile?.role === "admin" && <TeamTab />}
         {tab === "projects"  && profile?.role === "admin" && <ProjectsTab />}
         {tab === "users"     && profile?.role === "admin" && <UsersTab />}

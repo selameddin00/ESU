@@ -1,11 +1,10 @@
 "use client";
 import { useState } from "react";
-import { Monitor, Server, Shield, Cpu, PenLine, FlaskConical, CheckCircle, ChevronLeft, ChevronRight, Send, Sparkles, Rocket, BookOpen, Users, Star } from "lucide-react";
-import { JOIN_ROLES } from "@/lib/data";
+import { Monitor, Server, Shield, Cpu, PenLine, FlaskConical, CheckCircle, ChevronLeft, ChevronRight, Send, Sparkles, Rocket, BookOpen, Users, Star, AlertCircle } from "lucide-react";
+import { JOIN_ROLES, LEVELS } from "@/lib/data";
 import { GradientHeading } from "@/components/GradientHeading";
 
 const STEP_LABELS = ["Kimsin?", "İlgi Alanın", "Motivasyon"];
-const LEVELS = ["Öğrenci", "Junior", "Mid-level", "Senior", "Hobbyist"];
 
 const ICONS: Record<string, React.ElementType> = { Monitor, Server, Shield, Cpu, PenLine, FlaskConical };
 
@@ -72,6 +71,8 @@ function SuccessScreen({ name, onHome }: { name: string; onHome: () => void }) {
 export default function JoinPage() {
   const [step, setStep]           = useState(0);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError]         = useState<string | null>(null);
   const [form, setForm]           = useState({ name: "", email: "", github: "", roles: [] as string[], message: "", level: "" });
 
   const set = (key: string, val: unknown) => setForm((f) => ({ ...f, [key]: val }));
@@ -82,6 +83,28 @@ export default function JoinPage() {
     form.roles.length > 0 && !!form.level,
     form.message.trim().length > 10,
   ];
+
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/applications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setError(d.error ?? "Başvuru gönderilemedi. Birazdan tekrar dene.");
+        setSubmitting(false);
+        return;
+      }
+      setSubmitted(true);
+    } catch {
+      setError("Bağlantı hatası. İnternetini kontrol edip tekrar dene.");
+      setSubmitting(false);
+    }
+  };
 
   const PERKS = [
     { icon: Rocket,   color: "#818cf8", title: "Gerçek Projeler", text: "Sahte değil, gerçekten çalışan projelerde yer al." },
@@ -220,6 +243,11 @@ export default function JoinPage() {
                 <br />
                 {form.level} · {form.roles.map((id) => JOIN_ROLES.find((r) => r.id === id)?.label).join(", ")}
               </div>
+              {error && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", borderRadius: 10, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#f87171", fontSize: 14 }}>
+                  <AlertCircle size={16} style={{ flexShrink: 0 }} /> {error}
+                </div>
+              )}
             </div>
           )}
 
@@ -235,8 +263,8 @@ export default function JoinPage() {
                 Devam <ChevronRight size={18} />
               </button>
             ) : (
-              <button onClick={() => canNext[2] && setSubmitted(true)} disabled={!canNext[2]} style={{ all: "unset", cursor: canNext[2] ? "pointer" : "not-allowed", display: "flex", alignItems: "center", gap: 8, padding: "10px 24px", borderRadius: 10, background: canNext[2] ? "linear-gradient(135deg, var(--accent-primary), var(--accent-tertiary))" : "var(--glass-fill)", color: canNext[2] ? "#fff" : "var(--text-muted)", fontSize: 15, fontWeight: 700, opacity: canNext[2] ? 1 : 0.5 }}>
-                <Send size={18} /> Başvuruyu Gönder
+              <button onClick={() => canNext[2] && !submitting && handleSubmit()} disabled={!canNext[2] || submitting} style={{ all: "unset", cursor: canNext[2] && !submitting ? "pointer" : "not-allowed", display: "flex", alignItems: "center", gap: 8, padding: "10px 24px", borderRadius: 10, background: canNext[2] ? "linear-gradient(135deg, var(--accent-primary), var(--accent-tertiary))" : "var(--glass-fill)", color: canNext[2] ? "#fff" : "var(--text-muted)", fontSize: 15, fontWeight: 700, opacity: canNext[2] ? (submitting ? 0.7 : 1) : 0.5 }}>
+                <Send size={18} /> {submitting ? "Gönderiliyor..." : "Başvuruyu Gönder"}
               </button>
             )}
           </div>

@@ -105,6 +105,20 @@ create table public.projects (
   updated_at   timestamptz default now()
 );
 
+-- Applications (Katıl başvuru formu) — anonim model: giriş gerekmez, herkes
+-- başvurabilir, sadece admin görebilir/durumunu değiştirebilir.
+create table public.applications (
+  id          uuid default gen_random_uuid() primary key,
+  name        text not null,
+  email       text not null,
+  github      text,
+  roles       text[] not null default '{}',
+  level       text not null,
+  message     text not null,
+  status      text not null default 'yeni' check (status in ('yeni', 'incelendi', 'kabul', 'red')),
+  created_at  timestamptz default now()
+);
+
 -- Subscriptions
 create table public.subscriptions (
   id               uuid default gen_random_uuid() primary key,
@@ -124,6 +138,7 @@ alter table public.posts         enable row level security;
 alter table public.comments      enable row level security;
 alter table public.team_members  enable row level security;
 alter table public.projects      enable row level security;
+alter table public.applications  enable row level security;
 alter table public.subscriptions enable row level security;
 
 -- PROFILES
@@ -215,6 +230,23 @@ create policy "Projeler herkes okuyabilir"
 
 create policy "Sadece admin proje yönetebilir"
   on projects for all using (
+    exists (select 1 from profiles where id = auth.uid() and role = 'admin')
+  );
+
+-- APPLICATIONS
+create policy "Herkes başvurabilir"
+  on applications for insert
+  with check (status = 'yeni');
+  -- comments'teki bilinen with_check açığının düzeltilmiş hali: insert sırasında
+  -- status'u DB seviyesinde 'yeni'ye zorlar, anon kullanıcı kabul/red ile ekleyemez.
+
+create policy "Admin başvuruları görebilir"
+  on applications for select using (
+    exists (select 1 from profiles where id = auth.uid() and role = 'admin')
+  );
+
+create policy "Admin başvuru yönetebilir"
+  on applications for all using (
     exists (select 1 from profiles where id = auth.uid() and role = 'admin')
   );
 

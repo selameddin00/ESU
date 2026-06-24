@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionRole } from "@/lib/auth";
+import { escapeHtml } from "@/lib/escapeHtml";
 import { promises as dns } from "dns";
 
 const MX_LOOKUP_TIMEOUT_MS = 2000;
@@ -21,15 +22,6 @@ async function emailDomainValid(email: string): Promise<boolean> {
   } catch {
     return false;
   }
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 }
 
 // IP bazlı, bellek içi basit rate limit. Tek instance'a özel; serverless'ta her cold

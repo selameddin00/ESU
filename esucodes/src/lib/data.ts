@@ -26,6 +26,11 @@ export const JOIN_ROLES = [
   { id: "research",  label: "Araştırma",           icon: "FlaskConical", color: "#c084fc" },
 ];
 
+// Katıl formu + /api/applications validasyonu aynı listeyi kullanır (drift olmasın diye).
+export const LEVELS = ["Öğrenci", "Junior", "Mid-level", "Senior", "Hobbyist"] as const;
+
+export const APPLICATION_STATUSES = ["yeni", "incelendi", "kabul", "red"] as const;
+
 export const CAT_COLORS: Record<string, { hex: string; tone: string }> = {
   "Cyber Security": { hex: "#22d3ee", tone: "cyan" },
   "AI":             { hex: "#818cf8", tone: "indigo" },
