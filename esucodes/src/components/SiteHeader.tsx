@@ -1,12 +1,39 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Terminal } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Terminal, LogOut, LayoutDashboard } from "lucide-react";
 import { NAV } from "@/lib/data";
+import { createClient } from "@/lib/supabase/client";
 
 export function SiteHeader() {
   const pathname = usePathname();
+  const router   = useRouter();
+
+  const [loggedIn, setLoggedIn]     = useState(false);
+  const [canAccessAdmin, setCanAccessAdmin] = useState(false);
+
+  // onAuthStateChange Supabase'in lokal oturum kopyasını okuyarak abone olur
+  // anında (INITIAL_SESSION) tetiklenir; ekstra bir ağ çağrısı gerektirmez.
+  useEffect(() => {
+    const supabase = createClient();
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      setLoggedIn(!!session);
+      if (!session) { setCanAccessAdmin(false); return; }
+      // Sadece giriş yapmış kullanıcı için, mevcut /api/auth/is-admin endpoint'i tekrar kullanılır.
+      fetch("/api/auth/is-admin")
+        .then((res) => res.json())
+        .then((data: { isAdmin: boolean }) => setCanAccessAdmin(data.isAdmin))
+        .catch(() => setCanAccessAdmin(false));
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await createClient().auth.signOut();
+    router.push("/");
+    router.refresh();
+  };
 
   return (
     <header style={{
@@ -35,15 +62,40 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <Link href="/giris" style={{
-          display: "flex", alignItems: "center", gap: 8,
-          padding: "7px 16px", borderRadius: 9999,
-          background: "rgba(34,211,238,0.12)", border: "1px solid rgba(34,211,238,0.4)",
-          color: "var(--accent-tertiary)", fontSize: 14, fontWeight: 700, textDecoration: "none",
-          transition: "all 0.22s ease",
-        }}>
-          <Terminal size={16} /> Giriş
-        </Link>
+        {loggedIn ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {canAccessAdmin && (
+              <Link href="/admin" style={{
+                display: "flex", alignItems: "center", gap: 8,
+                padding: "7px 16px", borderRadius: 9999,
+                background: "rgba(129,140,248,0.12)", border: "1px solid rgba(129,140,248,0.4)",
+                color: "var(--accent-primary)", fontSize: 14, fontWeight: 700, textDecoration: "none",
+                transition: "all 0.22s ease",
+              }}>
+                <LayoutDashboard size={16} /> Panel
+              </Link>
+            )}
+            <button onClick={handleLogout} style={{
+              display: "flex", alignItems: "center", gap: 8,
+              padding: "7px 16px", borderRadius: 9999,
+              background: "rgba(248,113,113,0.12)", border: "1px solid rgba(248,113,113,0.4)",
+              color: "#f87171", fontSize: 14, fontWeight: 700,
+              cursor: "pointer", transition: "all 0.22s ease",
+            }}>
+              <LogOut size={16} /> Çıkış
+            </button>
+          </div>
+        ) : (
+          <Link href="/giris" style={{
+            display: "flex", alignItems: "center", gap: 8,
+            padding: "7px 16px", borderRadius: 9999,
+            background: "rgba(34,211,238,0.12)", border: "1px solid rgba(34,211,238,0.4)",
+            color: "var(--accent-tertiary)", fontSize: 14, fontWeight: 700, textDecoration: "none",
+            transition: "all 0.22s ease",
+          }}>
+            <Terminal size={16} /> Giriş
+          </Link>
+        )}
       </div>
     </header>
   );

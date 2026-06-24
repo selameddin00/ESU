@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import { SiteHeader } from "@/components/SiteHeader";
-import { SiteFooter } from "@/components/SiteFooter";
-import { MobileBottomNav } from "@/components/MobileBottomNav";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -84,12 +81,7 @@ export default function RootLayout({
         />
         <link rel="alternate" type="application/rss+xml" title="ESUcodes Blog" href="/feed.xml" />
       </head>
-      <body>
-        <SiteHeader />
-        <main>{children}</main>
-        <SiteFooter />
-        <MobileBottomNav />
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

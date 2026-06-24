@@ -657,7 +657,7 @@ export default function AdminPage() {
   const visibleNav = NAV_ITEMS.filter((n) => !n.adminOnly || profile?.role === "admin");
 
   return (
-    <div style={{ display: "flex", minHeight: "calc(100vh - 80px)" }}>
+    <div style={{ display: "flex", minHeight: "100vh" }}>
       <aside style={{ width: 220, borderRight: "1px solid var(--border-subtle)", padding: "20px 12px", display: "flex", flexDirection: "column", gap: 4, flexShrink: 0 }}>
         <div style={{ padding: "12px 14px", marginBottom: 12, borderRadius: 12, background: "var(--glass-fill)", border: "1px solid var(--border-subtle)" }}>
           <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{profile?.full_name ?? "Kullanıcı"}</div>
