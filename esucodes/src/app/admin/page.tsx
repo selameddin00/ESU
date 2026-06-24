@@ -1,15 +1,16 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   LayoutDashboard, FileText, Users, FolderOpen, LogOut,
   Plus, Pencil, Trash2, Eye, EyeOff, CheckCircle, Clock,
   ChevronRight, X, Save, Send, UsersRound, Globe, Bot,
-  LayoutDashboard as LDash, Orbit, Shield, MessageSquare,
+  LayoutDashboard as LDash, Orbit, Shield, MessageSquare, ExternalLink,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { RichEditor } from "@/components/editor/RichEditor";
-import { CATEGORIES } from "@/lib/data";
+import { CATEGORIES, NAV } from "@/lib/data";
 import type { Role } from "@/lib/supabase/types";
 
 type Profile    = { id: string; role: Role; full_name: string | null; username: string | null };
@@ -679,7 +680,20 @@ export default function AdminPage() {
         })}
 
         <div style={{ flex: 1 }} />
-        <button onClick={handleLogout} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(239,68,68,0.2)", cursor: "pointer", background: "rgba(239,68,68,0.08)", color: "#f87171", fontSize: 14, fontWeight: 600, width: "100%" }}>
+
+        <div style={{ borderTop: "1px solid var(--border-subtle)", marginTop: 8, paddingTop: 12 }}>
+          <div style={{ padding: "0 14px 8px", fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+            Siteyi Görüntüle
+          </div>
+          {NAV.map((link) => (
+            <Link key={link.id} href={link.href} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 14px", borderRadius: 10, color: "var(--text-secondary)", fontSize: 14, fontWeight: 500, textDecoration: "none", transition: "all 0.15s" }}>
+              <ExternalLink size={15} />
+              {link.label}
+            </Link>
+          ))}
+        </div>
+
+        <button onClick={handleLogout} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(239,68,68,0.2)", cursor: "pointer", background: "rgba(239,68,68,0.08)", color: "#f87171", fontSize: 14, fontWeight: 600, width: "100%", marginTop: 8 }}>
           <LogOut size={17} /> Çıkış Yap
         </button>
       </aside>
