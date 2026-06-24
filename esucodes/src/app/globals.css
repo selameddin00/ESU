@@ -145,6 +145,26 @@ body {
   .post-layout aside { display: none; }
 }
 
+/* ── Generic responsive grids ────────────────────────
+   Inline `gridTemplateColumns` (repeat(N,1fr) etc.) has no mobile
+   breakpoint and forces grid items to a fixed min-content width that
+   can exceed the viewport on narrow screens. These utility classes
+   carry only the column-count/track-sizing concern (gap/alignItems/etc.
+   stay as inline style) and collapse before that happens. */
+.grid-2, .grid-3, .grid-4, .grid-footer { display: grid; min-width: 0; }
+.grid-2      { grid-template-columns: repeat(2, 1fr); }
+.grid-3      { grid-template-columns: repeat(3, 1fr); }
+.grid-4      { grid-template-columns: repeat(4, 1fr); }
+.grid-footer { grid-template-columns: 2fr 1fr 1fr; }
+.grid-2 > *, .grid-3 > *, .grid-4 > *, .grid-footer > * { min-width: 0; }
+
+@media (max-width: 1023px) {
+  .grid-3, .grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 639px) {
+  .grid-2, .grid-3, .grid-4, .grid-footer { grid-template-columns: 1fr; }
+}
+
 /* ── Mobile Bottom Nav ───────────────────────────── */
 .mob-bottom-nav {
   display: none;

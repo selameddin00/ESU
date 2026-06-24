@@ -56,7 +56,7 @@ export default function AboutPage() {
       <div style={{ maxWidth: "var(--container-max)", margin: "0 auto", padding: "0 24px 96px" }}>
         {/* Mission + Vision */}
         <ScrollReveal>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 80 }}>
+          <div className="grid-2" style={{ gap: 24, marginBottom: 80 }}>
             <GlowCard glowColor="rgba(129,140,248,0.18)">
               <div style={{ padding: "36px 32px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
@@ -129,7 +129,7 @@ export default function AboutPage() {
               <h2 style={{ fontSize: 36, fontWeight: 900, color: "var(--text-primary)", margin: "0 0 12px" }}>Değerlerimiz</h2>
               <p style={{ color: "var(--text-secondary)", fontSize: 17 }}>Bizi bir arada tutan prensipler</p>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
+            <div className="grid-3" style={{ gap: 20 }}>
               {VALUES.map((v) => {
                 const Icon = ICONS[v.icon] || Rocket;
                 return (

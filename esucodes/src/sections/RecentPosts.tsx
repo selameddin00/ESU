@@ -36,7 +36,7 @@ export async function RecentPosts() {
             Tümü <ArrowRight size={16} />
           </Link>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 28 }}>
+        <div className="grid-3" style={{ gap: 28 }}>
           {posts.map((p) => <PostCard key={p.id} post={p} />)}
         </div>
       </ScrollReveal>

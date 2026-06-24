@@ -156,7 +156,8 @@ function FeaturedPost({ post }: { post: DbPost }) {
 
   return (
     <Link href={`/blog/${post.slug}`} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
-      style={{ display: "grid", gridTemplateColumns: "1fr 1fr", textDecoration: "none", borderRadius: 20, overflow: "hidden", background: `linear-gradient(135deg, ${cat.hex}12, ${cat.hex}06)`, border: `1px solid ${hover ? cat.hex + "50" : cat.hex + "28"}`, transition: "all 0.28s ease", boxShadow: hover ? `0 0 60px ${cat.hex}20` : `0 0 32px ${cat.hex}10`, marginBottom: 48 }}
+      className="grid-2"
+      style={{ textDecoration: "none", borderRadius: 20, overflow: "hidden", background: `linear-gradient(135deg, ${cat.hex}12, ${cat.hex}06)`, border: `1px solid ${hover ? cat.hex + "50" : cat.hex + "28"}`, transition: "all 0.28s ease", boxShadow: hover ? `0 0 60px ${cat.hex}20` : `0 0 32px ${cat.hex}10`, marginBottom: 48 }}
     >
       <div style={{ padding: "40px 36px", display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>

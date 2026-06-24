@@ -104,7 +104,7 @@ export function CommentSection({ postId }: { postId: string }) {
           </div>
         ) : (
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            <div className="grid-2" style={{ gap: 14 }}>
               <div>
                 <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "var(--text-muted)", marginBottom: 6, letterSpacing: "0.06em", textTransform: "uppercase" }}>AD SOYAD *</label>
                 <input value={form.author_name} onChange={(e) => setField("author_name", e.target.value)} placeholder="Ahmet Yılmaz"

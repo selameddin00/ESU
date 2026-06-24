@@ -72,7 +72,7 @@ export function ProjectsTeaser() {
 
   return (
     <section style={{ background: "var(--bg-secondary)", borderTop: "1px solid var(--border-subtle)", borderBottom: "1px solid var(--border-subtle)" }}>
-      <div style={{ maxWidth: "var(--container-max)", margin: "0 auto", padding: "80px 24px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }}>
+      <div className="grid-2" style={{ maxWidth: "var(--container-max)", margin: "0 auto", padding: "80px 24px", gap: 64, alignItems: "center" }}>
         <ScrollReveal>
           <GradientHeading as="h2" size="5xl">Projelerimiz</GradientHeading>
           <p style={{ color: "var(--text-secondary)", fontSize: 17, marginTop: 12, marginBottom: 32, lineHeight: 1.7 }}>

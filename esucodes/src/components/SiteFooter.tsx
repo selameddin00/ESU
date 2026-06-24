@@ -9,7 +9,7 @@ export function SiteFooter() {
   return (
     <footer style={{ borderTop: "1px solid var(--border-subtle)", background: "var(--bg-secondary)" }}>
       <div style={{ maxWidth: "var(--container-max)", margin: "0 auto", padding: "56px 24px 32px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 48, marginBottom: 48 }}>
+        <div className="grid-footer" style={{ gap: 48, marginBottom: 48 }}>
           <div>
             <Link href="/" style={{ textDecoration: "none", display: "block", marginBottom: 16 }}>
               <span className="esu-gradient-text" style={{ fontSize: 20, fontWeight: 800 }}>ESUCODES</span>

@@ -136,7 +136,7 @@ export default function TeamPage() {
       </section>
 
       <section style={{ background: "var(--bg-secondary)", borderTop: "1px solid var(--border-subtle)", borderBottom: "1px solid var(--border-subtle)", padding: "28px 24px" }}>
-        <div style={{ maxWidth: "var(--container-max)", margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 24 }}>
+        <div className="grid-4" style={{ maxWidth: "var(--container-max)", margin: "0 auto", gap: 24 }}>
           {stats.map((s) => (
             <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 14, justifyContent: "center" }}>
               <span style={{ color: "var(--accent-primary)" }}><s.icon size={26} /></span>
@@ -151,7 +151,7 @@ export default function TeamPage() {
 
       <section style={{ maxWidth: "var(--container-max)", margin: "0 auto", padding: "72px 24px" }}>
         {loading ? (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 28, marginBottom: 64 }}>
+          <div className="grid-3" style={{ gap: 28, marginBottom: 64 }}>
             {Array.from({ length: 3 }).map((_, i) => <MemberCardSkeleton key={i} />)}
           </div>
         ) : members.length === 0 ? (
@@ -161,7 +161,7 @@ export default function TeamPage() {
           </div>
         ) : (
           <ScrollReveal>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 28, marginBottom: 64 }}>
+            <div className="grid-3" style={{ gap: 28, marginBottom: 64 }}>
               {members.map((m) => <MemberCard key={m.id} member={m} onOpen={setSelected} />)}
             </div>
           </ScrollReveal>

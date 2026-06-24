@@ -95,7 +95,7 @@ export default function ProjectsPage() {
       </section>
 
       <section style={{ background: "var(--bg-secondary)", borderTop: "1px solid var(--border-subtle)", borderBottom: "1px solid var(--border-subtle)", padding: "32px 24px" }}>
-        <div style={{ maxWidth: "var(--container-max)", margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 24 }}>
+        <div className="grid-4" style={{ maxWidth: "var(--container-max)", margin: "0 auto", gap: 24 }}>
           {stats.map((s) => (
             <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 16, justifyContent: "center" }}>
               <span style={{ color: "var(--accent-primary)" }}><s.icon size={28} /></span>
@@ -110,7 +110,7 @@ export default function ProjectsPage() {
 
       <section style={{ maxWidth: "var(--container-max)", margin: "0 auto", padding: "80px 24px" }}>
         {loading ? (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 28 }}>
+          <div className="grid-2" style={{ gap: 28 }}>
             {Array.from({ length: 4 }).map((_, i) => <ProjectCardSkeleton key={i} />)}
           </div>
         ) : projects.length === 0 ? (
@@ -120,7 +120,7 @@ export default function ProjectsPage() {
           </div>
         ) : (
           <ScrollReveal>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 28 }}>
+            <div className="grid-2" style={{ gap: 28 }}>
               {projects.map((p) => <ProjectCard key={p.id} project={p} />)}
             </div>
           </ScrollReveal>

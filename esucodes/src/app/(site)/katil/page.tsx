@@ -111,7 +111,7 @@ export default function JoinPage() {
 
       {/* Perks */}
       <section style={{ maxWidth: "var(--container-max)", margin: "0 auto", padding: "0 24px 64px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20 }}>
+        <div className="grid-4" style={{ gap: 20 }}>
           {PERKS.map((p) => (
             <div key={p.title} style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 12, padding: "24px 20px", borderRadius: 16, background: "var(--glass-fill)", border: "1px solid var(--border-subtle)" }}>
               <p.icon size={26} color={p.color} />
@@ -158,7 +158,7 @@ export default function JoinPage() {
             <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
               <div>
                 <label style={{ display: "block", fontSize: 14, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 12 }}>Hangi alanlarda katkı sağlamak istersin? *</label>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
+                <div className="grid-2" style={{ gap: 12 }}>
                   {JOIN_ROLES.map((role) => {
                     const active = form.roles.includes(role.id);
                     const Icon = ICONS[role.icon] || Monitor;
