@@ -115,7 +115,7 @@ create table public.applications (
   roles       text[] not null default '{}',
   level       text not null,
   message     text not null,
-  status      text not null default 'yeni' check (status in ('yeni', 'incelendi', 'kabul', 'red')),
+  status      text not null default 'yeni' check (status in ('yeni', 'kabul', 'red')),
   created_at  timestamptz default now()
 );
 

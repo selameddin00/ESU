@@ -29,7 +29,7 @@ export const JOIN_ROLES = [
 // Katıl formu + /api/applications validasyonu aynı listeyi kullanır (drift olmasın diye).
 export const LEVELS = ["Öğrenci", "Junior", "Mid-level", "Senior", "Hobbyist"] as const;
 
-export const APPLICATION_STATUSES = ["yeni", "incelendi", "kabul", "red"] as const;
+export const APPLICATION_STATUSES = ["yeni", "kabul", "red"] as const;
 
 export const CAT_COLORS: Record<string, { hex: string; tone: string }> = {
   "Cyber Security": { hex: "#22d3ee", tone: "cyan" },

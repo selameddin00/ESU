@@ -610,15 +610,16 @@ function CommentsTab({ onPendingChange }: { onPendingChange: (n: number) => void
 }
 
 // ── Applications Tab ───────────────────────────────────────────────
-type Application = { id: string; name: string; email: string; github: string | null; roles: string[]; level: string; message: string; status: "yeni" | "incelendi" | "kabul" | "red"; created_at: string };
+type Application = { id: string; name: string; email: string; github: string | null; roles: string[]; level: string; message: string; status: "yeni" | "kabul" | "red"; created_at: string };
+type AppFilter = "aktif" | "yeni" | "kabul" | "red";
 
-const APPLICATION_STATUS_LABELS: Record<Application["status"], string> = { yeni: "Yeni", incelendi: "İncelendi", kabul: "Kabul", red: "Red" };
-const APPLICATION_STATUS_COLORS: Record<Application["status"], string> = { yeni: "#fb923c", incelendi: "#818cf8", kabul: "#22d3ee", red: "#f87171" };
+const APPLICATION_STATUS_LABELS: Record<Application["status"], string> = { yeni: "Yeni", kabul: "Kabul", red: "Red" };
+const APPLICATION_STATUS_COLORS: Record<Application["status"], string> = { yeni: "#fb923c", kabul: "#22d3ee", red: "#f87171" };
 
 function ApplicationsTab({ onPendingChange }: { onPendingChange: (n: number) => void }) {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading]   = useState(true);
-  const [filter, setFilter]     = useState<"all" | Application["status"]>("all");
+  const [filter, setFilter]     = useState<AppFilter>("aktif");
 
   const fetchApplications = useCallback(async () => {
     setLoading(true);
@@ -637,16 +638,27 @@ function ApplicationsTab({ onPendingChange }: { onPendingChange: (n: number) => 
     fetchApplications();
   };
 
-  const shown = applications.filter((a) => filter === "all" ? true : a.status === filter);
+  // "Aktif" = arşivlenmemiş (red dışındaki) başvurular; reddedilenler silinmiyor,
+  // sadece varsayılan listenin dışına çıkıp "Arşiv" filtresinde kalıyor.
+  const shown = applications.filter((a) =>
+    filter === "aktif" ? a.status !== "red" : a.status === filter
+  );
+
+  const FILTERS: { key: AppFilter; label: string; count: number }[] = [
+    { key: "aktif", label: "Aktif",  count: applications.filter((a) => a.status !== "red").length },
+    { key: "yeni",  label: "Yeni",   count: applications.filter((a) => a.status === "yeni").length },
+    { key: "kabul", label: "Kabul",  count: applications.filter((a) => a.status === "kabul").length },
+    { key: "red",   label: "Arşiv (Red)", count: applications.filter((a) => a.status === "red").length },
+  ];
 
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
         <h2 style={{ fontSize: 22, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>Başvurular</h2>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {(["all", "yeni", "incelendi", "kabul", "red"] as const).map((f) => (
-            <button key={f} onClick={() => setFilter(f)} style={{ padding: "7px 14px", borderRadius: 9999, fontSize: 13, fontWeight: 600, cursor: "pointer", border: "1px solid var(--border-subtle)", background: filter === f ? "var(--accent-primary)" : "var(--glass-fill)", color: filter === f ? "var(--bg-primary)" : "var(--text-secondary)" }}>
-              {f === "all" ? `Tümü (${applications.length})` : `${APPLICATION_STATUS_LABELS[f]} (${applications.filter((a) => a.status === f).length})`}
+          {FILTERS.map((f) => (
+            <button key={f.key} onClick={() => setFilter(f.key)} style={{ padding: "7px 14px", borderRadius: 9999, fontSize: 13, fontWeight: 600, cursor: "pointer", border: "1px solid var(--border-subtle)", background: filter === f.key ? "var(--accent-primary)" : "var(--glass-fill)", color: filter === f.key ? "var(--bg-primary)" : "var(--text-secondary)" }}>
+              {f.label} ({f.count})
             </button>
           ))}
         </div>
@@ -674,11 +686,6 @@ function ApplicationsTab({ onPendingChange }: { onPendingChange: (n: number) => 
                   </span>
                 </div>
                 <div style={{ display: "flex", gap: 6, flexShrink: 0, flexWrap: "wrap" }}>
-                  {a.status !== "incelendi" && (
-                    <button onClick={() => handleStatus(a.id, "incelendi")} title="İncelendi" style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: "1px solid rgba(129,140,248,0.3)", background: "rgba(129,140,248,0.08)", cursor: "pointer", color: "#818cf8", fontSize: 13, fontWeight: 600 }}>
-                      <Eye size={14} /> İncelendi
-                    </button>
-                  )}
                   {a.status !== "kabul" && (
                     <button onClick={() => handleStatus(a.id, "kabul")} title="Kabul Et" style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: "1px solid rgba(34,211,238,0.3)", background: "rgba(34,211,238,0.08)", cursor: "pointer", color: "#22d3ee", fontSize: 13, fontWeight: 600 }}>
                       <CheckCircle size={14} /> Kabul
