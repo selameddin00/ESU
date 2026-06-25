@@ -165,6 +165,19 @@ body {
   .grid-2, .grid-3, .grid-4, .grid-footer { grid-template-columns: 1fr; }
 }
 
+/* ── Admin sidebar ────────────────────────────────
+   Desktop: full rail with labels. Mobile: collapses to an icon-only
+   rail (labels hidden via .admin-label) so it never forces horizontal
+   page overflow on narrow viewports — no new toggle/JS, pure CSS. */
+.admin-sidebar { width: 236px; }
+.admin-nav-btn:hover { background: rgba(129,140,248,0.07); }
+
+@media (max-width: 640px) {
+  .admin-sidebar { width: 60px; padding-left: 6px !important; padding-right: 6px !important; }
+  .admin-sidebar .admin-label { display: none; }
+  .admin-sidebar .admin-profile { justify-content: center; padding: 8px !important; }
+}
+
 /* ── Mobile Bottom Nav ───────────────────────────── */
 .mob-bottom-nav {
   display: none;
