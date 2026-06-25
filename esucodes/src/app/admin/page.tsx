@@ -876,7 +876,7 @@ export default function AdminPage() {
             {"// canlı site"}
           </div>
           {NAV.map((link) => (
-            <Link key={link.id} href={link.href} target="_blank" rel="noopener noreferrer" className="admin-nav-btn" style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 10, color: "var(--text-secondary)", fontSize: 13, fontWeight: 500, textDecoration: "none", transition: "all 0.15s" }}>
+            <Link key={link.id} href={link.href} className="admin-nav-btn" style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 10, color: "var(--text-secondary)", fontSize: 13, fontWeight: 500, textDecoration: "none", transition: "all 0.15s" }}>
               <div style={{ width: 26, height: 26, borderRadius: 8, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <ExternalLink size={14} />
               </div>
