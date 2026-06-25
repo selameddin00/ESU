@@ -88,7 +88,7 @@ export function BlogPostContent({ post, related }: { post: DbPost; related: DbPo
               )}
             </div>
             <div style={{ marginLeft: "auto" }}>
-              <ShareButtons />
+              <ShareButtons slug={post.slug} title={post.title} />
             </div>
           </div>
         </div>
